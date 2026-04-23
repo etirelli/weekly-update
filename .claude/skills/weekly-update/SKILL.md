@@ -237,15 +237,14 @@ This step runs ONLY when a new weekly page was created in step 7c (not when an e
 1. Read the landing (parent) page content:
    Call `mcp__atlassian__confluence_get_page` with the `parent_page_id` from config, `convert_to_markdown: true`.
 
-2. Determine the **ISO week number** from the Friday date:
+2. Determine the **year** from the Friday date:
    ```bash
-   week_num=$(date -j -f "%Y-%m-%d" "$friday" "+%V")
    year=$(date -j -f "%Y-%m-%d" "$friday" "+%Y")
    ```
 
-3. Construct the new table row:
+3. Construct the new table row (two columns — Dates and Link):
    ```
-   | Week {week_num} | {friday formatted as Mon DD} – {thursday formatted as Mon DD} | [Weekly Update — {friday} to {thursday}]({new_page_url}) |
+   | {friday formatted as Mon DD} – {thursday formatted as Mon DD} | [Weekly Update — {friday} to {thursday}]({new_page_url}) |
    ```
 
 4. Parse the landing page markdown:
@@ -254,9 +253,9 @@ This step runs ONLY when a new weekly page was created in step 7c (not when an e
      ```markdown
      ## {year}
 
-     | Week | Dates | Link |
-     |------|-------|------|
-     | Week {week_num} | ... | ... |
+     | Dates | Link |
+     |-------|------|
+     | {formatted dates} | [Weekly Update — ...](...) |
      ```
      Add the new year section in chronological order (newest year first, just after the `---` separator that follows Quick Links).
 

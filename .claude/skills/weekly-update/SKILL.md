@@ -7,7 +7,6 @@ allowed-tools:
   - mcp__atlassian__confluence_get_page
   - mcp__atlassian__confluence_get_page_children
   - mcp__atlassian__confluence_search
-  - mcp__google-calendar__get-current-time
   - Bash
   - Read
   - Write
@@ -81,13 +80,14 @@ cat ~/.claude/weekly-update.json 2>/dev/null
 
 9. Confirm: "Configuration saved. Weekly update pages will be created under: [page title] (space: [space_key], team: [team_name]). You can reconfigure anytime by deleting ~/.claude/weekly-update.json and running the skill again."
 
-### Step 2: Get current date
+### Step 2: Get current date and compute reporting week boundaries
 
-Call `mcp__google-calendar__get-current-time`. This is MANDATORY. Never assume the current date.
+Get the current date from the local system clock:
 
-Extract the current date from the response.
-
-### Step 2: Compute reporting week boundaries
+```bash
+current_date=$(date "+%Y-%m-%d")
+echo "current_date=$current_date"
+```
 
 The reporting week runs **Friday to Thursday**. Calculate the start (Friday) and end (Thursday) of the current reporting week.
 

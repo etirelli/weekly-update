@@ -40,18 +40,6 @@ Before installing, ensure you have:
    ```
    Follow the [Atlassian MCP setup guide](https://github.com/anthropics/mcp-atlassian) for authentication.
 
-3. **Google Calendar MCP server** configured (used for reliable date detection):
-   ```json
-   {
-     "mcpServers": {
-       "google-calendar": {
-         "command": "npx",
-         "args": ["-y", "@anthropic/mcp-google-calendar"]
-       }
-     }
-   }
-   ```
-
 ## Installation
 
 ### Option A: Add as a marketplace (recommended)
@@ -170,7 +158,7 @@ The skill will prompt for a new parent page on the next invocation.
 - The skill auto-categorizes based on content. You can override by specifying the category explicitly (e.g., "Add this to Team Updates > MLflow Core")
 
 **Date issues**
-- The skill always uses `mcp__google-calendar__get-current-time` for the current date. Ensure your Google Calendar MCP is configured.
+- The skill reads the current date from the local system clock. Verify your system date is correct.
 
 ## License
 

@@ -230,6 +230,45 @@ Create it using `mcp__atlassian__confluence_create_page` with:
 
 When creating a new page with the first entry, replace the placeholder `*(no entries yet)*` in the appropriate section with the actual entry, or add the team subsection under Team Updates.
 
+**7d. After creating a NEW weekly page, update the landing page:**
+
+This step runs ONLY when a new weekly page was created in step 7c (not when an existing page was found in 7b).
+
+1. Read the landing (parent) page content:
+   Call `mcp__atlassian__confluence_get_page` with the `parent_page_id` from config, `convert_to_markdown: true`.
+
+2. Determine the **ISO week number** from the Friday date:
+   ```bash
+   week_num=$(date -j -f "%Y-%m-%d" "$friday" "+%V")
+   year=$(date -j -f "%Y-%m-%d" "$friday" "+%Y")
+   ```
+
+3. Construct the new table row:
+   ```
+   | Week {week_num} | {friday formatted as Mon DD} – {thursday formatted as Mon DD} | [Weekly Update — {friday} to {thursday}]({new_page_url}) |
+   ```
+
+4. Parse the landing page markdown:
+   - Look for a `## {year}` section header. If it exists, append the new row to the table in that section (at the end, before the next `##` header or end of content).
+   - If no `## {year}` section exists, create one with a new table:
+     ```markdown
+     ## {year}
+
+     | Week | Dates | Link |
+     |------|-------|------|
+     | Week {week_num} | ... | ... |
+     ```
+     Add the new year section in chronological order (newest year first, just after the `---` separator that follows Quick Links).
+
+5. Update the landing page:
+   Call `mcp__atlassian__confluence_update_page` with:
+   - `page_id`: the `parent_page_id`
+   - `title`: `"Weekly Updates"` (keep unchanged)
+   - `content`: the updated markdown
+   - `content_format`: `"markdown"`
+   - `is_minor_edit`: `true`
+   - `version_comment`: `"Added link for week of {friday} to {thursday}"`
+
 ### Step 8: Insert entry into the page
 
 **If updating an existing page:**

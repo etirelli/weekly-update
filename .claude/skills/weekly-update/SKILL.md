@@ -169,16 +169,44 @@ Transform the user's input into a polished entry following these rules:
 - **Prefix** with `[Component]` tag where relevant (e.g., `[MLflow]`, `[AI Pipelines]`, `[Ray]`)
 - **One paragraph**, objective, focused on **results and impact** — NOT execution details
 - **Include links** inline (Jira tickets, docs, blog posts, PRs, conference pages)
-- **Attribution** at the end: `(Name)`
+- **Link team members** to their Rover profiles (see below)
+- **Attribution** at the end: `(Name)` — also linked to Rover
 - Write for an **executive audience** — the wider organization and leadership
+
+**Linking team members to Rover profiles:**
+
+Whenever a team member is mentioned by name in the entry (including the attribution), link their name to their Red Hat Rover profile using the format:
+```
+[Full Name](https://rover.redhat.com/people/profile/{kerberos_id})
+```
+
+To resolve names to Kerberos IDs:
+1. Check the `team_members` map in `~/.claude/weekly-update.json` (a cached dictionary of `"Full Name": "kerberos_id"` pairs).
+2. If the person is not in the cache, ask the user: "What is {Name}'s Kerberos ID? (e.g., the part before @redhat.com in their email)"
+3. Save the new mapping to the `team_members` map in the config file so subsequent mentions don't require asking again.
+
+The config file's `team_members` field looks like:
+```json
+{
+  "parent_page_id": "...",
+  "space_key": "...",
+  "parent_page_url": "...",
+  "team_name": "...",
+  "team_members": {
+    "Bryan Keane": "bkeane",
+    "Edson Tirelli": "etirelli",
+    "Nikhil Kathole": "nkathole"
+  }
+}
+```
 
 **Quality gate — if the input looks like a Jira dump** (e.g., "RHOAIENG-52502 GA readiness tasks completed - multi-arch support"), rewrite it to be executive-appropriate. If you cannot infer the impact, ask the user: "Can you describe the business impact or outcome? The current description reads like a task list."
 
 **Good examples:**
-- `[Ray] Bryan Keane demoed our ongoing Ray Data and Docling integration work at PyTorch Conference Europe. (Bryan)`
-- `[AI Pipelines] The RHOAI dashboard team completed a multi-month effort to modernize the upstream Kubeflow Pipelines UI, enabling significantly higher upstream feature velocity and unblocking the modular architecture implementation. [Blog post](https://blog.kubeflow.org/modernizing-kubeflow-pipelines-ui/). (Matt)`
-- `[MLflow] We are engaged in design work with the MLflow community for a centralized asset registry for MCP servers, agents, and skills. The initial Skills Registry is expected in the May upstream MLflow release. (Edson)`
-- `[Feature Store] Nikhil Kathole published a new [Feast Production Deployment Topologies](https://docs.feast.dev/master/how-to-guides/production-deployment-topologies) guide. Field enablement material is being created to support customer deployment conversations. (Nikhil)`
+- `[Ray] [Bryan Keane](https://rover.redhat.com/people/profile/bkeane) demoed our ongoing Ray Data and Docling integration work at PyTorch Conference Europe. ([Bryan](https://rover.redhat.com/people/profile/bkeane))`
+- `[AI Pipelines] The RHOAI dashboard team completed a multi-month effort to modernize the upstream Kubeflow Pipelines UI, enabling significantly higher upstream feature velocity and unblocking the modular architecture implementation. [Blog post](https://blog.kubeflow.org/modernizing-kubeflow-pipelines-ui/). ([Matt](https://rover.redhat.com/people/profile/mprahl))`
+- `[MLflow] We are engaged in design work with the MLflow community for a centralized asset registry for MCP servers, agents, and skills. The initial Skills Registry is expected in the May upstream MLflow release. ([Edson](https://rover.redhat.com/people/profile/etirelli))`
+- `[Feature Store] [Nikhil Kathole](https://rover.redhat.com/people/profile/nkathole) published a new [Feast Production Deployment Topologies](https://docs.feast.dev/master/how-to-guides/production-deployment-topologies) guide. Field enablement material is being created to support customer deployment conversations. ([Nikhil](https://rover.redhat.com/people/profile/nkathole))`
 
 **Bad examples (do NOT produce entries like these):**
 - `RHOAIENG-52502 GA readiness tasks completed - multi-arch support, security requirements` — Jira ticket dump, no impact framing

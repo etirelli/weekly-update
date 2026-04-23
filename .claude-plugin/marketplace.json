@@ -1,0 +1,31 @@
+{
+  "name": "weekly-update",
+  "description": "Shared skill for collaboratively populating weekly status updates into Confluence.",
+  "owner": {
+    "name": "etirelli"
+  },
+  "plugins": [
+    {
+      "name": "weekly-update",
+      "version": "1.0.0",
+      "description": "Capture team status updates into Confluence weekly report pages. Categorizes entries into Highlights and per-team Updates. Validates completeness, formats for executive audience, manages weekly pages automatically.",
+      "category": "productivity",
+      "keywords": ["weekly-update", "status-report", "confluence", "team-updates"],
+      "author": {
+        "name": "Edson Tirelli"
+      },
+      "homepage": "https://github.com/etirelli/weekly-update",
+      "repository": "https://github.com/etirelli/weekly-update",
+      "license": "Apache-2.0",
+      "source": {
+        "source": "github",
+        "repo": "etirelli/weekly-update",
+        "ref": "main"
+      },
+      "skills": [
+        "./.claude/skills"
+      ],
+      "strict": false
+    }
+  ]
+}

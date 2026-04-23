@@ -1,0 +1,13 @@
+{
+  "name": "weekly-update",
+  "version": "1.0.0",
+  "description": "Shared Claude Code skill for collaboratively populating weekly status updates into Confluence. Captures highlights (customer conversations, conference talks, blog posts, team changes, risks, open source news) and per-team updates. Validates completeness, formats entries for an executive audience, and manages weekly report pages automatically.",
+  "author": {
+    "name": "Edson Tirelli",
+    "email": "etirelli@redhat.com"
+  },
+  "homepage": "https://github.com/etirelli/weekly-update",
+  "repository": "https://github.com/etirelli/weekly-update",
+  "license": "Apache-2.0",
+  "keywords": ["weekly-update", "status-report", "confluence", "team-updates"]
+}

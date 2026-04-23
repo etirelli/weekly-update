@@ -132,17 +132,26 @@ The skill will ask you to rephrase if the entry is too execution-focused.
 
 ## Configuration
 
-The skill is pre-configured with:
+On first run, the skill prompts you for the **Confluence parent page** where weekly update child pages will be created. You can provide:
+- A full page URL (e.g., `https://your-instance.atlassian.net/wiki/spaces/TEAM/pages/123456789/Weekly+Updates`)
+- A Confluence tinylink (e.g., `https://your-instance.atlassian.net/wiki/x/zJWdFw`)
+- A numeric page ID (you'll also be asked for the space key)
+
+The skill validates the page exists, then saves the configuration to `~/.claude/weekly-update.json`. Subsequent runs use the saved config silently.
 
 | Setting | Value |
 |---------|-------|
-| Confluence space | `RHODS` |
-| Parent page ID | `396203468` |
-| Parent page URL | https://redhat.atlassian.net/wiki/spaces/RHODS/pages/396203468 |
+| Config file | `~/.claude/weekly-update.json` |
 | Reporting week | Friday to Thursday |
 | Page title format | `Weekly Update — YYYY-MM-DD to YYYY-MM-DD` |
 
-To change the target Confluence page, edit the Configuration section in `.claude/skills/weekly-update/SKILL.md`.
+To reconfigure (e.g., point to a different parent page):
+
+```bash
+rm ~/.claude/weekly-update.json
+```
+
+The skill will prompt for a new parent page on the next invocation.
 
 ## Workflow
 
@@ -152,9 +161,10 @@ To change the target Confluence page, edit the Configuration section in `.claude
 
 ## Troubleshooting
 
-**"Cannot reach the Weekly Updates parent page"**
+**"Cannot reach the parent page"**
 - Verify your Atlassian MCP server is configured and authenticated
-- Test by running: `mcp__atlassian__confluence_get_page` with page_id `396203468`
+- Check your config: `cat ~/.claude/weekly-update.json`
+- Test by running: `mcp__atlassian__confluence_get_page` with the page_id from your config
 
 **Entries appearing in wrong section**
 - The skill auto-categorizes based on content. You can override by specifying the category explicitly (e.g., "Add this to Team Updates > MLflow Core")

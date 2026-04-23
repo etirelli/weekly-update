@@ -10,14 +10,15 @@ allowed-tools:
   - mcp__google-calendar__get-current-time
   - Bash
   - Read
+  - Write
 argument-hint: "<update description> — e.g., 'Bryan presented Ray+Docling integration at PyTorch Conference Europe'"
 ---
 
 ## Configuration
 
-- **Parent page ID**: `396203468`
-- **Space key**: `RHODS`
-- **Parent page URL**: https://redhat.atlassian.net/wiki/spaces/RHODS/pages/396203468
+Configuration is stored in `~/.claude/weekly-update.json`. This file is created automatically on first run.
+
+- **Config file**: `~/.claude/weekly-update.json`
 - **Reporting week**: Friday through Thursday
 - **Child page title format**: `Weekly Update — YYYY-MM-DD to YYYY-MM-DD` (Friday to Thursday dates)
 
@@ -25,7 +26,39 @@ argument-hint: "<update description> — e.g., 'Bryan presented Ray+Docling inte
 
 **Target: $ARGUMENTS**
 
-### Step 1: Get current date
+### Step 1: Load configuration
+
+Read the config file at `~/.claude/weekly-update.json`.
+
+```bash
+cat ~/.claude/weekly-update.json 2>/dev/null
+```
+
+**If the file exists and contains valid JSON with `parent_page_id` and `space_key`:** Use those values. Proceed to Step 2.
+
+**If the file does not exist or is missing required fields:** Run first-time setup:
+
+1. Ask the user: "This is your first time running /weekly-update. Please provide the Confluence page URL or page ID for the parent page where weekly updates will be created as child pages."
+2. If the user provides a URL like `https://redhat.atlassian.net/wiki/spaces/SPACE/pages/PAGEID/...`, extract the page ID and space key from the URL.
+3. If the user provides a tinylink like `https://redhat.atlassian.net/wiki/x/ENCODED`, decode the page ID:
+   ```bash
+   encoded="ENCODED"
+   echo -n "${encoded}==" | base64 -D 2>/dev/null | xxd -p | python3 -c "import sys; h=sys.stdin.read().strip(); le=int.from_bytes(bytes.fromhex(h)[::-1],'big'); print(le)"
+   ```
+4. If the user provides just a numeric page ID, use it directly and ask for the space key.
+5. **Validate** by calling `mcp__atlassian__confluence_get_page` with the resolved `page_id`. If it fails, report the error and ask the user to try again. If it succeeds, extract the `space_key` from the response metadata.
+6. **Save** the configuration:
+   ```json
+   {
+     "parent_page_id": "<resolved_page_id>",
+     "space_key": "<space_key>",
+     "parent_page_url": "<full_url>"
+   }
+   ```
+   Write this to `~/.claude/weekly-update.json`.
+7. Confirm: "Configuration saved. Weekly update pages will be created under: [page title] (space: [space_key]). You can reconfigure anytime by deleting ~/.claude/weekly-update.json and running the skill again."
+
+### Step 2: Get current date
 
 Call `mcp__google-calendar__get-current-time`. This is MANDATORY. Never assume the current date.
 
@@ -134,7 +167,7 @@ Transform the user's input into a polished entry following these rules:
 **7a. Check for existing page:**
 
 Call `mcp__atlassian__confluence_get_page_children` with:
-- `parent_id`: `"396203468"`
+- `parent_id`: the `parent_page_id` from the config file
 - `limit`: `10`
 - `include_content`: `false`
 
@@ -151,8 +184,8 @@ Store the page content and page ID for updating in Step 8.
 **7c. If the page does NOT exist:**
 
 Create it using `mcp__atlassian__confluence_create_page` with:
-- `space_key`: `"RHODS"`
-- `parent_id`: `"396203468"`
+- `space_key`: the `space_key` from the config file
+- `parent_id`: the `parent_page_id` from the config file
 - `title`: the computed week title (e.g., `"Weekly Update — 2026-04-17 to 2026-04-23"`)
 - `content_format`: `"markdown"`
 - `content`: the page template below, with the entry already inserted in the correct section
@@ -236,7 +269,7 @@ Report what was done:
 ```
 Entry added to: Weekly Update — YYYY-MM-DD to YYYY-MM-DD
 Section: [Highlights > Category Name | Team Updates > Team Name]
-Page: https://redhat.atlassian.net/wiki/spaces/RHODS/pages/{page_id}
+Page: {parent_page_url}/pages/{page_id}
 
 - [Component] The formatted entry text. (Name)
 ```
@@ -245,15 +278,15 @@ If a future-dated entry was also added:
 
 ```
 Also added forward-looking entry to: Weekly Update — YYYY-MM-DD to YYYY-MM-DD
-Page: https://redhat.atlassian.net/wiki/spaces/RHODS/pages/{page_id}
+Page: {parent_page_url}/pages/{page_id}
 ```
 
-## First-Run Connectivity Check
+## Reconfiguration
 
-On the very first invocation, verify MCP connectivity by fetching the parent page:
+To change the target Confluence page, delete the config file and run the skill again:
 
+```bash
+rm ~/.claude/weekly-update.json
 ```
-Call mcp__atlassian__confluence_get_page with page_id "396203468"
-```
 
-If this fails, report: "Cannot reach the Weekly Updates parent page in Confluence. Please verify that your Atlassian MCP server is configured and authenticated. The parent page is at https://redhat.atlassian.net/wiki/spaces/RHODS/pages/396203468"
+The skill will prompt for a new parent page on the next invocation.

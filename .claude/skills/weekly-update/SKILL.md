@@ -47,16 +47,39 @@ cat ~/.claude/weekly-update.json 2>/dev/null
    ```
 4. If the user provides just a numeric page ID, use it directly and ask for the space key.
 5. **Validate** by calling `mcp__atlassian__confluence_get_page` with the resolved `page_id`. If it fails, report the error and ask the user to try again. If it succeeds, extract the `space_key` from the response metadata.
-6. **Save** the configuration:
+6. Ask the user: "What is the name of your team? (e.g., Training and Experimentation)" — this will be used on the landing page.
+7. **Save** the configuration:
    ```json
    {
      "parent_page_id": "<resolved_page_id>",
      "space_key": "<space_key>",
-     "parent_page_url": "<full_url>"
+     "parent_page_url": "<full_url>",
+     "team_name": "<team_name>"
    }
    ```
    Write this to `~/.claude/weekly-update.json`.
-7. Confirm: "Configuration saved. Weekly update pages will be created under: [page title] (space: [space_key]). You can reconfigure anytime by deleting ~/.claude/weekly-update.json and running the skill again."
+8. **Populate the landing page.** Read the current parent page content. If it looks like a placeholder or has not been set up yet (e.g., no `## How It Works` section), write the landing page template:
+
+   ```markdown
+   # Weekly Updates
+
+   Welcome to the {team_name} weekly updates hub. This page collects cross-cutting highlights and team-level updates from across the organization, compiled collaboratively by the team throughout each reporting week.
+
+   ## How It Works
+
+   - **Reporting week** runs Friday through Thursday
+   - Team members add updates anytime during the week using the `/weekly-update` Claude Code skill
+   - Updates are automatically categorized into **Highlights** (customer conversations, conference talks, blog posts, team changes, risks, open source news) and **Team Updates**
+   - The manager reviews and curates the page each Thursday before sharing with leadership
+
+   ---
+   ```
+
+   Call `mcp__atlassian__confluence_update_page` with `page_id`, keep the existing `title`, `content_format: "markdown"`, `emoji: "📋"`, `version_comment: "Landing page setup via /weekly-update"`.
+
+   If the page already has proper content (has a `## How It Works` section), skip this step — do not overwrite an existing landing page.
+
+9. Confirm: "Configuration saved. Weekly update pages will be created under: [page title] (space: [space_key], team: [team_name]). You can reconfigure anytime by deleting ~/.claude/weekly-update.json and running the skill again."
 
 ### Step 2: Get current date
 
@@ -248,7 +271,7 @@ This step runs ONLY when a new weekly page was created in step 7c (not when an e
    ```
 
 4. Parse the landing page markdown:
-   - Look for a `## {year}` section header. If it exists, append the new row to the table in that section (at the end, before the next `##` header or end of content).
+   - Look for a `## {year}` section header. If it exists, insert the new row **at the top of the table** (immediately after the `|-------|------|` header separator line), so that more recent weeks appear first.
    - If no `## {year}` section exists, create one with a new table:
      ```markdown
      ## {year}
@@ -257,7 +280,7 @@ This step runs ONLY when a new weekly page was created in step 7c (not when an e
      |-------|------|
      | {formatted dates} | [Weekly Update — ...](...) |
      ```
-     Add the new year section in chronological order (newest year first, just after the `---` separator that follows Quick Links).
+     Add the new year section at the top (immediately after the `---` separator that follows the How It Works section), so that the most recent year appears first.
 
 5. Update the landing page:
    Call `mcp__atlassian__confluence_update_page` with:

@@ -82,33 +82,39 @@ cat ~/.claude/weekly-update.json 2>/dev/null
 
 ### Step 2: Get current date and compute reporting week boundaries
 
-Get the current date from the local system clock:
+Get the current date and compute the reporting week boundaries (Friday to Thursday). Use the appropriate commands for the host OS:
 
+**macOS:**
 ```bash
 current_date=$(date "+%Y-%m-%d")
-echo "current_date=$current_date"
-```
-
-The reporting week runs **Friday to Thursday**. Calculate the start (Friday) and end (Thursday) of the current reporting week.
-
-Use bash to compute the week boundaries:
-
-```bash
-current_date="YYYY-MM-DD"  # from Step 1
 current_dow=$(date -j -f "%Y-%m-%d" "$current_date" "+%u")  # 1=Mon..7=Sun
-# Friday = day 5
-if [ "$current_dow" -ge 5 ]; then
-  days_back=$((current_dow - 5))
-else
-  days_back=$((current_dow + 2))
-fi
+if [ "$current_dow" -ge 5 ]; then days_back=$((current_dow - 5)); else days_back=$((current_dow + 2)); fi
 friday=$(date -j -v-${days_back}d -f "%Y-%m-%d" "$current_date" "+%Y-%m-%d")
 thursday=$(date -j -v+6d -f "%Y-%m-%d" "$friday" "+%Y-%m-%d")
-echo "week_start=$friday week_end=$thursday"
-echo "title=Weekly Update — $friday to $thursday"
+echo "current_date=$current_date week_start=$friday week_end=$thursday"
 ```
 
-Store the computed `friday`, `thursday`, and page title for use in later steps.
+**Linux:**
+```bash
+current_date=$(date "+%Y-%m-%d")
+current_dow=$(date -d "$current_date" "+%u")  # 1=Mon..7=Sun
+if [ "$current_dow" -ge 5 ]; then days_back=$((current_dow - 5)); else days_back=$((current_dow + 2)); fi
+friday=$(date -d "$current_date - ${days_back} days" "+%Y-%m-%d")
+thursday=$(date -d "$friday + 6 days" "+%Y-%m-%d")
+echo "current_date=$current_date week_start=$friday week_end=$thursday"
+```
+
+**Windows (PowerShell):**
+```powershell
+$current_date = (Get-Date).ToString("yyyy-MM-dd")
+$dow = [int](Get-Date).DayOfWeek  # 0=Sun..6=Sat
+if ($dow -ge 5) { $days_back = $dow - 5 } elseif ($dow -eq 0) { $days_back = 2 } else { $days_back = $dow + 2 }
+$friday = (Get-Date).AddDays(-$days_back).ToString("yyyy-MM-dd")
+$thursday = ([datetime]::Parse($friday)).AddDays(6).ToString("yyyy-MM-dd")
+Write-Output "current_date=$current_date week_start=$friday week_end=$thursday"
+```
+
+Detect the OS by checking `uname` output (or the presence of PowerShell). Store the computed `friday`, `thursday`, and page title (`"Weekly Update — $friday to $thursday"`) for use in later steps.
 
 ### Step 3: Parse user input
 
@@ -288,9 +294,9 @@ This step runs ONLY when a new weekly page was created in step 7c (not when an e
 1. Read the landing (parent) page content:
    Call `mcp__atlassian__confluence_get_page` with the `parent_page_id` from config, `convert_to_markdown: true`.
 
-2. Determine the **year** from the Friday date:
+2. Determine the **year** from the Friday date — extract the first 4 characters:
    ```bash
-   year=$(date -j -f "%Y-%m-%d" "$friday" "+%Y")
+   year=${friday:0:4}
    ```
 
 3. Construct the new table row (two columns — Dates and Link):

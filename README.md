@@ -61,7 +61,7 @@ This allows automatic updates when the skill is improved.
 In Claude Code, run:
 
 ```
-/plugin marketplace add https://github.com/etirelli/weekly-update
+/plugin marketplace add etirelli/weekly-update
 ```
 
 Then install the plugin:

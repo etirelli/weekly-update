@@ -32,13 +32,21 @@ Before installing, ensure you have:
    {
      "mcpServers": {
        "atlassian": {
-         "command": "npx",
-         "args": ["-y", "@anthropic/mcp-atlassian"]
+         "command": "uvx",
+         "args": ["mcp-atlassian"],
+         "env": {
+           "CONFLUENCE_URL": "https://your-company.atlassian.net/wiki",
+           "CONFLUENCE_USERNAME": "your.email@company.com",
+           "CONFLUENCE_API_TOKEN": "your_api_token",
+           "JIRA_URL": "https://your-company.atlassian.net",
+           "JIRA_USERNAME": "your.email@company.com",
+           "JIRA_API_TOKEN": "your_api_token"
+         }
        }
      }
    }
    ```
-   Follow the [Atlassian MCP setup guide](https://github.com/anthropics/mcp-atlassian) for authentication.
+   Create an API token at [https://id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens). For Server/Data Center deployments, use a Personal Access Token instead. See the [mcp-atlassian documentation](https://github.com/sooperset/mcp-atlassian) for full setup details.
 
 ## Installation
 

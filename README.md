@@ -31,14 +31,14 @@ Before installing, ensure you have:
 
    **Option A: Via Claude Code CLI (recommended)**
    ```bash
-   claude mcp add --transport stdio \
-     --env CONFLUENCE_URL=https://your-company.atlassian.net/wiki \
-     --env CONFLUENCE_USERNAME=your.email@company.com \
-     --env CONFLUENCE_API_TOKEN=your_api_token \
-     --env JIRA_URL=https://your-company.atlassian.net \
-     --env JIRA_USERNAME=your.email@company.com \
-     --env JIRA_API_TOKEN=your_api_token \
-     atlassian -- uvx mcp-atlassian
+   claude mcp add atlassian \
+     -e CONFLUENCE_URL=https://your-company.atlassian.net/wiki \
+     -e CONFLUENCE_USERNAME=your.email@company.com \
+     -e CONFLUENCE_API_TOKEN=your_api_token \
+     -e JIRA_URL=https://your-company.atlassian.net \
+     -e JIRA_USERNAME=your.email@company.com \
+     -e JIRA_API_TOKEN=your_api_token \
+     -- uvx mcp-atlassian
    ```
 
    **Option B: Manual configuration**

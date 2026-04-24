@@ -27,7 +27,23 @@ Additional ad-hoc categories can be added when needed. Team Updates are listed s
 Before installing, ensure you have:
 
 1. **Claude Code** installed and configured
-2. **Atlassian MCP server** configured with Confluence access. Add to your MCP configuration:
+2. **Atlassian MCP server** configured with Confluence access.
+
+   **Option A: Via Claude Code CLI (recommended)**
+   ```bash
+   claude mcp add --transport stdio \
+     --env CONFLUENCE_URL=https://your-company.atlassian.net/wiki \
+     --env CONFLUENCE_USERNAME=your.email@company.com \
+     --env CONFLUENCE_API_TOKEN=your_api_token \
+     --env JIRA_URL=https://your-company.atlassian.net \
+     --env JIRA_USERNAME=your.email@company.com \
+     --env JIRA_API_TOKEN=your_api_token \
+     atlassian -- uvx mcp-atlassian
+   ```
+
+   **Option B: Manual configuration**
+
+   Add to your MCP configuration file:
    ```json
    {
      "mcpServers": {
@@ -46,6 +62,7 @@ Before installing, ensure you have:
      }
    }
    ```
+
    Create an API token at [https://id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens). For Server/Data Center deployments, use a Personal Access Token instead. See the [mcp-atlassian documentation](https://github.com/sooperset/mcp-atlassian) for full setup details.
 
 ## Installation

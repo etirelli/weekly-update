@@ -2,11 +2,12 @@
 name: weekly-update
 description: "Capture team status updates into Confluence weekly report pages under the RHODS Weekly Updates space. Categorizes entries into Highlights (Customer Conversations, Conference Talks, Blog Posts, Team Changes, Major Risks, Open Source News) or per-team Updates. Run whenever there is something worth reporting. Supports free-form input for quick capture or conversational mode for guided entry."
 allowed-tools:
-  - mcp__atlassian__confluence_create_page
-  - mcp__atlassian__confluence_update_page
-  - mcp__atlassian__confluence_get_page
-  - mcp__atlassian__confluence_get_page_children
-  - mcp__atlassian__confluence_search
+  - mcp__atlassian__createConfluencePage
+  - mcp__atlassian__updateConfluencePage
+  - mcp__atlassian__getConfluencePage
+  - mcp__atlassian__getConfluencePageDescendants
+  - mcp__atlassian__searchConfluenceUsingCql
+  - mcp__google-calendar__get-current-time
   - Bash
   - Read
   - Write
@@ -45,7 +46,7 @@ cat ~/.claude/weekly-update.json 2>/dev/null
    echo -n "${encoded}==" | base64 -D 2>/dev/null | xxd -p | python3 -c "import sys; h=sys.stdin.read().strip(); le=int.from_bytes(bytes.fromhex(h)[::-1],'big'); print(le)"
    ```
 4. If the user provides just a numeric page ID, use it directly and ask for the space key.
-5. **Validate** by calling `mcp__atlassian__confluence_get_page` with the resolved `page_id`. If it fails, report the error and ask the user to try again. If it succeeds, extract the `space_key` from the response metadata.
+5. **Validate** by calling `mcp__atlassian__getConfluencePage` with the resolved page ID. If it fails, report the error and ask the user to try again. If it succeeds, extract the space key from the response metadata.
 6. Ask the user: "What is the name of your team? (e.g., Training and Experimentation)" — this will be used on the landing page.
 7. **Save** the configuration:
    ```json
@@ -74,7 +75,7 @@ cat ~/.claude/weekly-update.json 2>/dev/null
    ---
    ```
 
-   Call `mcp__atlassian__confluence_update_page` with `page_id`, keep the existing `title`, `content_format: "markdown"`, `emoji: "📋"`, `version_comment: "Landing page setup via /weekly-update"`.
+   Call `mcp__atlassian__updateConfluencePage` with the page ID, keeping the existing title. Use Atlassian Document Format (ADF) or wiki markup as the content format, and set the version comment to "Landing page setup via /weekly-update".
 
    If the page already has proper content (has a `## How It Works` section), skip this step — do not overwrite an existing landing page.
 
@@ -223,29 +224,23 @@ The config file's `team_members` field looks like:
 
 **7a. Check for existing page:**
 
-Call `mcp__atlassian__confluence_get_page_children` with:
-- `parent_id`: the `parent_page_id` from the config file
-- `limit`: `10`
-- `include_content`: `false`
+Call `mcp__atlassian__getConfluencePageDescendants` with the `parent_page_id` from the config file. Request a limited number of results.
 
-Search the returned children for a page whose title matches the computed week title from Step 2.
+Search the returned descendants for a page whose title matches the computed week title from Step 2.
 
 **7b. If the page exists:**
 
-Call `mcp__atlassian__confluence_get_page` with:
-- `page_id`: the found page's ID
-- `convert_to_markdown`: `true`
+Call `mcp__atlassian__getConfluencePage` with the found page's ID. Request the content in a format suitable for editing (storage format or body content).
 
 Store the page content and page ID for updating in Step 8.
 
 **7c. If the page does NOT exist:**
 
-Create it using `mcp__atlassian__confluence_create_page` with:
-- `space_key`: the `space_key` from the config file
-- `parent_id`: the `parent_page_id` from the config file
-- `title`: the computed week title (e.g., `"Weekly Update — 2026-04-17 to 2026-04-23"`)
-- `content_format`: `"markdown"`
-- `content`: the page template below, with the entry already inserted in the correct section
+Create it using `mcp__atlassian__createConfluencePage` with:
+- The `space_key` from the config file
+- The `parent_page_id` as the parent
+- The computed week title (e.g., `"Weekly Update — 2026-04-17 to 2026-04-23"`)
+- The page template below as the body content, with the entry already inserted in the correct section
 
 **Page template:**
 
@@ -292,7 +287,7 @@ When creating a new page with the first entry, replace the placeholder `*(no ent
 This step runs ONLY when a new weekly page was created in step 7c (not when an existing page was found in 7b).
 
 1. Read the landing (parent) page content:
-   Call `mcp__atlassian__confluence_get_page` with the `parent_page_id` from config, `convert_to_markdown: true`.
+   Call `mcp__atlassian__getConfluencePage` with the `parent_page_id` from config.
 
 2. Determine the **year** from the Friday date — extract the first 4 characters:
    ```bash
@@ -317,13 +312,7 @@ This step runs ONLY when a new weekly page was created in step 7c (not when an e
      Add the new year section at the top (immediately after the `---` separator that follows the How It Works section), so that the most recent year appears first.
 
 5. Update the landing page:
-   Call `mcp__atlassian__confluence_update_page` with:
-   - `page_id`: the `parent_page_id`
-   - `title`: `"Weekly Updates"` (keep unchanged)
-   - `content`: the updated markdown
-   - `content_format`: `"markdown"`
-   - `is_minor_edit`: `true`
-   - `version_comment`: `"Added link for week of {friday} to {thursday}"`
+   Call `mcp__atlassian__updateConfluencePage` with the `parent_page_id`, keeping the title `"Weekly Updates"` unchanged. Pass the updated content and set the version comment to `"Added link for week of {friday} to {thursday}"`.
 
 ### Step 8: Insert entry into the page
 
@@ -336,13 +325,7 @@ This step runs ONLY when a new weekly page was created in step 7c (not when an e
 3. Format the entry as a markdown bullet: `- [Component] Description text. (Name)`
 4. **Never modify or remove other people's entries.** Only append.
 
-Call `mcp__atlassian__confluence_update_page` with:
-- `page_id`: the existing page ID
-- `title`: keep the existing title (unchanged)
-- `content`: the updated markdown with the new entry inserted
-- `content_format`: `"markdown"`
-- `is_minor_edit`: `true`
-- `version_comment`: `"Added [section > category] entry via /weekly-update"`
+Call `mcp__atlassian__updateConfluencePage` with the existing page ID, keeping the title unchanged. Pass the updated content with the new entry inserted and set the version comment to `"Added [section > category] entry via /weekly-update"`.
 
 ### Step 9: Handle future-dated entries
 

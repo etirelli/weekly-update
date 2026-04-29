@@ -27,43 +27,13 @@ Additional ad-hoc categories can be added when needed. Team Updates are listed s
 Before installing, ensure you have:
 
 1. **Claude Code** installed and configured
-2. **Atlassian MCP server** configured with Confluence access.
-
-   **Option A: Via Claude Code CLI (recommended)**
+2. **Atlassian Rovo MCP server** (official) configured with Confluence read+write access. Add via Claude Code CLI:
    ```bash
-   claude mcp add atlassian \
-     -e CONFLUENCE_URL=https://your-company.atlassian.net/wiki \
-     -e CONFLUENCE_USERNAME=your.email@company.com \
-     -e CONFLUENCE_API_TOKEN=your_api_token \
-     -e JIRA_URL=https://your-company.atlassian.net \
-     -e JIRA_USERNAME=your.email@company.com \
-     -e JIRA_API_TOKEN=your_api_token \
-     -- uvx mcp-atlassian
+   claude mcp add --transport http atlassian https://mcp.atlassian.com/v1/mcp/authv2
    ```
+   On first use, an OAuth 2.1 flow will open in your browser to authorize access. For setup details, see the [Atlassian Rovo MCP Getting Started Guide](https://support.atlassian.com/atlassian-rovo-mcp-server/docs/getting-started-with-the-atlassian-remote-mcp-server/) and [Setting up IDEs](https://support.atlassian.com/atlassian-rovo-mcp-server/docs/setting-up-ides/).
 
-   **Option B: Manual configuration**
-
-   Add to your MCP configuration file:
-   ```json
-   {
-     "mcpServers": {
-       "atlassian": {
-         "command": "uvx",
-         "args": ["mcp-atlassian"],
-         "env": {
-           "CONFLUENCE_URL": "https://your-company.atlassian.net/wiki",
-           "CONFLUENCE_USERNAME": "your.email@company.com",
-           "CONFLUENCE_API_TOKEN": "your_api_token",
-           "JIRA_URL": "https://your-company.atlassian.net",
-           "JIRA_USERNAME": "your.email@company.com",
-           "JIRA_API_TOKEN": "your_api_token"
-         }
-       }
-     }
-   }
-   ```
-
-   Create an API token at [https://id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens). For Server/Data Center deployments, use a Personal Access Token instead. See the [mcp-atlassian documentation](https://github.com/sooperset/mcp-atlassian) for full setup details.
+   **Required permission groups**: `read_confluence` and `write_confluence` (enabled by your Atlassian organization admin).
 
 ## Installation
 
@@ -175,9 +145,15 @@ The skill will prompt for a new parent page on the next invocation.
 ## Troubleshooting
 
 **"Cannot reach the parent page"**
-- Verify your Atlassian MCP server is configured and authenticated
+- Verify the official Atlassian Rovo MCP server is configured: `claude mcp get atlassian`
+- If it shows "Needs authentication", restart your Claude Code session to trigger the OAuth flow
 - Check your config: `cat ~/.claude/weekly-update.json`
-- Test by running: `mcp__atlassian__confluence_get_page` with the page_id from your config
+- Test by asking Claude to call `getConfluencePage` with the page_id from your config
+
+**"Needs authentication" on the Atlassian MCP**
+- The official MCP uses OAuth 2.1. A browser window should open automatically on first use
+- If your organization uses IP allowlisting, ensure your current IP is allowed
+- API token authentication is not supported — the official MCP requires OAuth
 
 **Entries appearing in wrong section**
 - The skill auto-categorizes based on content. You can override by specifying the category explicitly (e.g., "Add this to Team Updates > MLflow Core")

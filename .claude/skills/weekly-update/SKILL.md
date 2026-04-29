@@ -7,7 +7,6 @@ allowed-tools:
   - mcp__atlassian__getConfluencePage
   - mcp__atlassian__getConfluencePageDescendants
   - mcp__atlassian__searchConfluenceUsingCql
-  - mcp__google-calendar__get-current-time
   - Bash
   - Read
   - Write

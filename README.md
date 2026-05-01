@@ -4,7 +4,7 @@ A Claude Code skill for collaboratively populating weekly status updates into Co
 
 ## What It Does
 
-- **Captures updates** into a shared Confluence page, organized by reporting week (Friday-Thursday)
+- **Captures updates** into a shared Confluence page, organized by reporting week (Saturday-Friday)
 - **Categorizes entries** into Highlights (cross-cutting) or per-team Updates
 - **Validates completeness** by asking for missing links, outcomes, and specifics
 - **Formats for executives** with results/impact focus, not execution details
@@ -125,7 +125,7 @@ The skill validates the page exists, then saves the configuration to `~/.claude/
 | Setting | Value |
 |---------|-------|
 | Config file | `~/.claude/weekly-update.json` |
-| Reporting week | Friday to Thursday |
+| Reporting week | Saturday to Friday |
 | Page title format | `Weekly Update — YYYY-MM-DD to YYYY-MM-DD` |
 
 To reconfigure (e.g., point to a different parent page):
@@ -138,9 +138,9 @@ The skill will prompt for a new parent page on the next invocation.
 
 ## Workflow
 
-1. **Throughout the week** (Fri-Thu): team members run `/weekly-update` whenever they have something to report
+1. **Throughout the week** (Sat-Fri): team members run `/weekly-update` whenever they have something to report
 2. **The skill** captures, validates, categorizes, formats, and inserts entries into the Confluence page
-3. **On Thursday**: the manager reviews and edits the page before forwarding highlights to leadership
+3. **On Friday**: the manager reviews and edits the page before forwarding highlights to leadership
 
 ## Troubleshooting
 

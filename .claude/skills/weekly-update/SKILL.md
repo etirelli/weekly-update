@@ -18,8 +18,8 @@ argument-hint: "<update description> — e.g., 'Bryan presented Ray+Docling inte
 Configuration is stored in `~/.claude/weekly-update.json`. This file is created automatically on first run.
 
 - **Config file**: `~/.claude/weekly-update.json`
-- **Reporting week**: Friday through Thursday
-- **Child page title format**: `Weekly Update — YYYY-MM-DD to YYYY-MM-DD` (Friday to Thursday dates)
+- **Reporting week**: Saturday through Friday
+- **Child page title format**: `Weekly Update — YYYY-MM-DD to YYYY-MM-DD` (Saturday to Friday dates)
 
 ## EXECUTE NOW
 
@@ -66,10 +66,10 @@ cat ~/.claude/weekly-update.json 2>/dev/null
 
    ## How It Works
 
-   - **Reporting week** runs Friday through Thursday
+   - **Reporting week** runs Saturday through Friday
    - Team members add updates anytime during the week using the `/weekly-update` Claude Code skill
    - Updates are automatically categorized into **Highlights** (customer conversations, conference talks, blog posts, team changes, risks, open source news) and **Team Updates**
-   - The manager reviews and curates the page each Thursday before sharing with leadership
+   - The manager reviews and curates the page each Friday before sharing with leadership
 
    ---
    ```
@@ -82,39 +82,39 @@ cat ~/.claude/weekly-update.json 2>/dev/null
 
 ### Step 2: Get current date and compute reporting week boundaries
 
-Get the current date and compute the reporting week boundaries (Friday to Thursday). Use the appropriate commands for the host OS:
+Get the current date and compute the reporting week boundaries (Saturday to Friday). Use the appropriate commands for the host OS:
 
 **macOS:**
 ```bash
 current_date=$(date "+%Y-%m-%d")
 current_dow=$(date -j -f "%Y-%m-%d" "$current_date" "+%u")  # 1=Mon..7=Sun
-if [ "$current_dow" -ge 5 ]; then days_back=$((current_dow - 5)); else days_back=$((current_dow + 2)); fi
-friday=$(date -j -v-${days_back}d -f "%Y-%m-%d" "$current_date" "+%Y-%m-%d")
-thursday=$(date -j -v+6d -f "%Y-%m-%d" "$friday" "+%Y-%m-%d")
-echo "current_date=$current_date week_start=$friday week_end=$thursday"
+if [ "$current_dow" -ge 6 ]; then days_back=$((current_dow - 6)); else days_back=$((current_dow + 1)); fi
+saturday=$(date -j -v-${days_back}d -f "%Y-%m-%d" "$current_date" "+%Y-%m-%d")
+friday=$(date -j -v+6d -f "%Y-%m-%d" "$saturday" "+%Y-%m-%d")
+echo "current_date=$current_date week_start=$saturday week_end=$friday"
 ```
 
 **Linux:**
 ```bash
 current_date=$(date "+%Y-%m-%d")
 current_dow=$(date -d "$current_date" "+%u")  # 1=Mon..7=Sun
-if [ "$current_dow" -ge 5 ]; then days_back=$((current_dow - 5)); else days_back=$((current_dow + 2)); fi
-friday=$(date -d "$current_date - ${days_back} days" "+%Y-%m-%d")
-thursday=$(date -d "$friday + 6 days" "+%Y-%m-%d")
-echo "current_date=$current_date week_start=$friday week_end=$thursday"
+if [ "$current_dow" -ge 6 ]; then days_back=$((current_dow - 6)); else days_back=$((current_dow + 1)); fi
+saturday=$(date -d "$current_date - ${days_back} days" "+%Y-%m-%d")
+friday=$(date -d "$saturday + 6 days" "+%Y-%m-%d")
+echo "current_date=$current_date week_start=$saturday week_end=$friday"
 ```
 
 **Windows (PowerShell):**
 ```powershell
 $current_date = (Get-Date).ToString("yyyy-MM-dd")
 $dow = [int](Get-Date).DayOfWeek  # 0=Sun..6=Sat
-if ($dow -ge 5) { $days_back = $dow - 5 } elseif ($dow -eq 0) { $days_back = 2 } else { $days_back = $dow + 2 }
-$friday = (Get-Date).AddDays(-$days_back).ToString("yyyy-MM-dd")
-$thursday = ([datetime]::Parse($friday)).AddDays(6).ToString("yyyy-MM-dd")
-Write-Output "current_date=$current_date week_start=$friday week_end=$thursday"
+if ($dow -eq 6) { $days_back = 0 } elseif ($dow -eq 0) { $days_back = 1 } else { $days_back = $dow + 1 }
+$saturday = (Get-Date).AddDays(-$days_back).ToString("yyyy-MM-dd")
+$friday = ([datetime]::Parse($saturday)).AddDays(6).ToString("yyyy-MM-dd")
+Write-Output "current_date=$current_date week_start=$saturday week_end=$friday"
 ```
 
-Detect the OS by checking `uname` output (or the presence of PowerShell). Store the computed `friday`, `thursday`, and page title (`"Weekly Update — $friday to $thursday"`) for use in later steps.
+Detect the OS by checking `uname` output (or the presence of PowerShell). Store the computed `saturday`, `friday`, and page title (`"Weekly Update — $saturday to $friday"`) for use in later steps.
 
 ### Step 3: Parse user input
 
@@ -238,13 +238,13 @@ Store the page content and page ID for updating in Step 8.
 Create it using `mcp__atlassian__createConfluencePage` with:
 - The `space_key` from the config file
 - The `parent_page_id` as the parent
-- The computed week title (e.g., `"Weekly Update — 2026-04-17 to 2026-04-23"`)
+- The computed week title (e.g., `"Weekly Update — 2026-04-18 to 2026-04-24"`)
 - The page template below as the body content, with the entry already inserted in the correct section
 
 **Page template:**
 
 ```markdown
-# Weekly Update — {friday} to {thursday}
+# Weekly Update — {saturday} to {friday}
 
 ## Highlights
 
@@ -288,14 +288,14 @@ This step runs ONLY when a new weekly page was created in step 7c (not when an e
 1. Read the landing (parent) page content:
    Call `mcp__atlassian__getConfluencePage` with the `parent_page_id` from config.
 
-2. Determine the **year** from the Friday date — extract the first 4 characters:
+2. Determine the **year** from the Saturday date — extract the first 4 characters:
    ```bash
-   year=${friday:0:4}
+   year=${saturday:0:4}
    ```
 
 3. Construct the new table row (two columns — Dates and Link):
    ```
-   | {friday formatted as Mon DD} – {thursday formatted as Mon DD} | [Weekly Update — {friday} to {thursday}]({new_page_url}) |
+   | {saturday formatted as Mon DD} – {friday formatted as Mon DD} | [Weekly Update — {saturday} to {friday}]({new_page_url}) |
    ```
 
 4. Parse the landing page markdown:
@@ -311,7 +311,7 @@ This step runs ONLY when a new weekly page was created in step 7c (not when an e
      Add the new year section at the top (immediately after the `---` separator that follows the How It Works section), so that the most recent year appears first.
 
 5. Update the landing page:
-   Call `mcp__atlassian__updateConfluencePage` with the `parent_page_id`, keeping the title `"Weekly Updates"` unchanged. Pass the updated content and set the version comment to `"Added link for week of {friday} to {thursday}"`.
+   Call `mcp__atlassian__updateConfluencePage` with the `parent_page_id`, keeping the title `"Weekly Updates"` unchanged. Pass the updated content and set the version comment to `"Added link for week of {saturday} to {friday}"`.
 
 ### Step 8: Insert entry into the page
 
@@ -331,7 +331,7 @@ Call `mcp__atlassian__updateConfluencePage` with the existing page ID, keeping t
 If the entry describes something happening in a **future reporting week** (detected in Step 3):
 
 1. **Determine the target date** of the future event.
-2. **Compute which reporting week** the target date falls in (using the same Friday-Thursday logic from Step 2).
+2. **Compute which reporting week** the target date falls in (using the same Saturday-Friday logic from Step 2).
 3. **If the target date falls within the CURRENT reporting week:** Add one entry with present-tense framing. No dual posting needed.
 4. **If the target date falls in a FUTURE reporting week:**
    - **Current week's page**: Add an entry with **forward-looking framing** (e.g., "AI Pipelines is preparing for the v3.4 release, planned for YYYY-MM-DD")

@@ -1,6 +1,6 @@
 # Weekly Update
 
-A Claude Code skill for collaboratively populating weekly status updates into Confluence. Team members run `/weekly-update` whenever they have something worth reporting, and the skill handles categorization, formatting, and page management automatically.
+A skill for collaboratively populating weekly status updates into Confluence, available for both **Claude Code** and **Cursor**. Team members run `/weekly-update` whenever they have something worth reporting, and the skill handles categorization, formatting, and page management automatically.
 
 ## What It Does
 
@@ -37,7 +37,9 @@ Before installing, ensure you have:
 
 ## Installation
 
-### Option A: Add as a marketplace (recommended)
+### Claude Code
+
+#### Option A: Add as a marketplace (recommended)
 
 This allows automatic updates when the skill is improved.
 
@@ -53,13 +55,57 @@ Then install the plugin:
 /plugin install weekly-update
 ```
 
-### Option B: Clone and use as plugin directory
+#### Option B: Clone and use as plugin directory
 
 ```bash
 git clone https://github.com/etirelli/weekly-update.git ~/.claude/plugins/weekly-update
 ```
 
 Then add it to your Claude Code settings.
+
+### Cursor
+
+Cursor requires the community [sooperset/mcp-atlassian](https://github.com/sooperset/mcp-atlassian) MCP server with Confluence read+write access. Add to `~/.cursor/mcp.json` (or via Settings → MCP):
+
+```json
+{
+  "mcpServers": {
+    "mcp-atlassian": {
+      "command": "uvx",
+      "args": ["mcp-atlassian", "--env-file", "/path/to/atlassian.env", "--transport", "stdio"]
+    }
+  }
+}
+```
+
+Create the env file with your [Atlassian API token](https://id.atlassian.com/manage-profile/security/api-tokens):
+
+```
+CONFLUENCE_URL=https://your-company.atlassian.net/wiki
+CONFLUENCE_USERNAME=your.email@company.com
+CONFLUENCE_API_TOKEN=your_api_token
+JIRA_URL=https://your-company.atlassian.net
+JIRA_USERNAME=your.email@company.com
+JIRA_API_TOKEN=your_api_token
+```
+
+Then install the skill:
+
+```bash
+git clone https://github.com/etirelli/weekly-update.git /tmp/weekly-update
+mkdir -p ~/.cursor/skills/weekly-update
+cp /tmp/weekly-update/.cursor/skills/weekly-update/SKILL.md ~/.cursor/skills/weekly-update/SKILL.md
+rm -rf /tmp/weekly-update
+```
+
+Alternatively, to install as a project-level skill (shared with your team via version control):
+
+```bash
+mkdir -p .cursor/skills/weekly-update
+cp /path/to/weekly-update/.cursor/skills/weekly-update/SKILL.md .cursor/skills/weekly-update/SKILL.md
+```
+
+The skill auto-discovers the MCP server name on first run and stores configuration at `~/.cursor/weekly-update.json` (falls back to `~/.claude/weekly-update.json` for cross-tool compatibility).
 
 ## Usage
 
